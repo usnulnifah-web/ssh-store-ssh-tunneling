@@ -63,6 +63,7 @@ AGENT_MAX_SKEW_SECONDS=60
 EOF
 chmod 0600 /etc/ssh-store-agent/agent.env
 chown -R root:root /opt/ssh-store-agent /etc/ssh-store-agent /var/lib/ssh-store-agent
+if [[ -e /etc/.pwd.lock ]] && ! fuser /etc/.pwd.lock >/dev/null 2>&1; then rm -f /etc/.pwd.lock; fi
 
 sed "s|@NODE_BIN@|${NODE_BIN}|g" systemd/ssh-store-agent.service > /etc/systemd/system/ssh-store-agent.service
 chmod 0644 /etc/systemd/system/ssh-store-agent.service
