@@ -113,3 +113,35 @@ sudo bash install.sh
 ```
 
 Manual operasi admin dan user tersedia di [ADMIN-USER-MANUAL.md](https://github.com/usnulnifah-web/ssh-store/blob/main/ADMIN-USER-MANUAL.md).
+
+## Menu terminal admin Habibillah
+
+Installer terbaru juga memasang menu terminal berwarna untuk login SSH root interaktif. Menu menampilkan nama **HABIBILLAH STORE**, status agent, dan daftar protocol bernomor.
+
+Saat root login melalui SSH secara interaktif, menu muncul otomatis. Pilihan utama:
+
+```text
+1. SSH WebSocket
+2. OpenVPN WebSocket
+3. V2Ray / VLESS
+4. Trojan
+5. Shadowsocks
+6. WireGuard
+7. WebSocket SSL / TLS
+0. Keluar ke shell
+```
+
+Pilih `1` untuk submenu SSH WebSocket:
+
+```text
+1. Lihat daftar akun
+2. Buat akun baru
+3. Perpanjang akun
+4. Suspend / aktifkan akun
+5. Hapus akun
+0. Kembali
+```
+
+Penghapusan akun meminta konfirmasi dengan mengetik `HAPUS`. Menu hanya berjalan pada terminal SSH interaktif root, sehingga tidak mengganggu `scp`, cron, API, atau perintah SSH otomatis. Jika ingin keluar dari menu ke shell, pilih `0`.
+
+Menu ini mengelola akun melalui VPS Agent lokal. Provisioner OpenVPN, V2Ray, Trojan, Shadowsocks, dan WireGuard harus diaktifkan setelah konfigurasi protocol masing-masing selesai diuji dari panel admin.
