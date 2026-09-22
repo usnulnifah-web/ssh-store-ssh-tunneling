@@ -48,7 +48,10 @@ if (( ${#AGENT_SHARED_SECRET} < 32 )); then echo "Secret minimal 32 karakter." >
 install -d -m 0750 /opt/ssh-store-agent /var/lib/ssh-store-agent /etc/ssh-store-agent
 install -m 0644 src/agent.js /opt/ssh-store-agent/agent.js
 install -m 0750 admin-menu.sh /usr/local/sbin/ssh-store-admin-menu
+install -m 0750 license-check.sh /usr/local/sbin/ssh-store-license-check
+install -m 0750 license-manager.sh /usr/local/sbin/ssh-store-license-manager
 install -m 0644 login-menu.sh /etc/profile.d/ssh-store-menu.sh
+if [[ ! -f /var/lib/ssh-store-agent/license.env ]]; then printf "LICENSE_STATUS=active\nLICENSE_EXPIRES_EPOCH=%s\n" "$(( $(date +%s) + 259200 ))" > /var/lib/ssh-store-agent/license.env; chmod 0600 /var/lib/ssh-store-agent/license.env; fi
 cat > /etc/ssh-store-agent/agent.env <<EOF
 AGENT_PORT=${AGENT_PORT}
 AGENT_BIND_HOST=${AGENT_BIND_HOST}

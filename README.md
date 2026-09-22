@@ -145,3 +145,21 @@ Pilih `1` untuk submenu SSH WebSocket:
 Penghapusan akun meminta konfirmasi dengan mengetik `HAPUS`. Menu hanya berjalan pada terminal SSH interaktif root, sehingga tidak mengganggu `scp`, cron, API, atau perintah SSH otomatis. Jika ingin keluar dari menu ke shell, pilih `0`.
 
 Menu ini mengelola akun melalui VPS Agent lokal. Provisioner OpenVPN, V2Ray, Trojan, Shadowsocks, dan WireGuard harus diaktifkan setelah konfigurasi protocol masing-masing selesai diuji dari panel admin.
+
+## Lisensi Premium dan Trial
+
+Menu dan agent menampilkan status **SCRIPT INI PREMIUM BERLANGGANAN**. Instalasi baru mendapat trial 3 hari. Setelah masa trial berakhir, systemd menolak menjalankan agent dan menu terminal menampilkan pesan lisensi tidak aktif.
+
+Admin dapat melihat status lisensi:
+
+```bash
+sudo ssh-store-license-manager status
+```
+
+Perpanjangan manual untuk testing/admin:
+
+```bash
+sudo ssh-store-license-manager extend 30
+```
+
+Pada produksi, perpanjangan sebaiknya dilakukan oleh Backend API setelah pembayaran/aktivasi pelanggan terverifikasi. File lisensi berada di `/var/lib/ssh-store-agent/license.env` dan tidak boleh diedit atau dibagikan sembarangan.

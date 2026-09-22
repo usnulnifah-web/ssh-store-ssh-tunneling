@@ -5,6 +5,7 @@ AGENT_ENV=/etc/ssh-store-agent/agent.env
 [[ -r "$AGENT_ENV" ]] && . "$AGENT_ENV"
 AGENT_PORT="${AGENT_PORT:-8787}"
 AGENT_SECRET="${AGENT_SHARED_SECRET:-}"
+if [[ -x /usr/local/sbin/ssh-store-license-check ]] && ! /usr/local/sbin/ssh-store-license-check >/dev/null 2>&1; then clear 2>/dev/null || true; printf "\033[31mSCRIPT PREMIUM TIDAK AKTIF\033[0m\n"; printf "Masa trial/lisensi berakhir. Hubungi admin untuk memperpanjang.\n"; exit 1; fi
 
 ESC=$'\033'
 RESET="${ESC}[0m"; CYAN="${ESC}[36m"; BLUE="${ESC}[34m"; GREEN="${ESC}[32m"; YELLOW="${ESC}[33m"; RED="${ESC}[31m"; MAGENTA="${ESC}[35m"; DIM="${ESC}[2m"
@@ -12,7 +13,7 @@ clear_screen(){ command -v clear >/dev/null 2>&1 && clear || true; printf '\033[
 item(){ local text="$1" width; width=$(tput cols 2>/dev/null || echo 80); printf '%*s%s\n' $(( (width+${#text})/2 )) '' "$text"; }
 line(){ printf '%b\n' "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"; }
 logo(){ printf "%b\n" "${CYAN}██╗  ██╗  █████╗  ██████╗ ██╗██████╗ ${RESET}"; printf "%b\n" "${BLUE}██║  ██║ ██╔══██╗██╔══██╗██║██╔══██╗${RESET}"; printf "%b\n" "${MAGENTA}███████║ ███████║██████╔╝██║██████╔╝${RESET}"; printf "%b\n" "${YELLOW}██╔══██║ ██╔══██║██╔══██╗██║██╔══██╗${RESET}"; printf "%b\n" "${GREEN}██║  ██║ ██║  ██║██████╔╝██║██████╔╝${RESET}"; }
-header(){ clear_screen; logo; printf "%b\n" "${DIM}Script khusus website SSH Store${RESET}"; printf "%b\n" "${DIM}VPS Provisioning & Tunnel Control Panel${RESET}"; line; printf "%b\n" "${GREEN}  Status: SIAP DIGUNAKAN${RESET}"; line; }
+header(){ clear_screen; logo; printf "%b\n" "${DIM}Script khusus website SSH Store${RESET}"; printf "%b\n" "${YELLOW}SCRIPT INI PREMIUM BERLANGGANAN${RESET}"; printf "%b\n" "${DIM}Trial aktif 3 hari. Jika tidak diperpanjang, script tidak dapat dijalankan.${RESET}"; printf "%b\n" "${DIM}VPS Provisioning & Tunnel Control Panel${RESET}"; line; printf "%b\n" "${GREEN}  Status: SIAP DIGUNAKAN${RESET}"; line; }
 request(){ local method="$1" path="$2" body="${3:-{}}"; local ts sig; ts="$(date +%s)"; sig="$(printf '%s.%s' "$ts" "$body" | openssl dgst -sha256 -hmac "$AGENT_SECRET" -hex | sed 's/^.* //')"; curl -fsS --max-time 12 -X "$method" "http://127.0.0.1:${AGENT_PORT}${path}" -H "content-type: application/json" -H "x-agent-timestamp: ${ts}" -H "x-agent-signature: ${sig}" -d "$body"; }
 pretty(){ if command -v python3 >/dev/null 2>&1; then python3 -m json.tool 2>/dev/null || cat; else cat; fi; }
 list_accounts(){ echo; printf '%b\n' "${CYAN}DAFTAR AKUN SSH${RESET}"; if [[ -f /var/lib/ssh-store-agent/accounts.json ]]; then cat /var/lib/ssh-store-agent/accounts.json | pretty; else echo 'Belum ada akun.'; fi; read -r -p 'Tekan Enter untuk kembali...' _; }
