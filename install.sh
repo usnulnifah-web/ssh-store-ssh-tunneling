@@ -41,6 +41,7 @@ done
 
 if [[ "$AGENT_BIND_HOST" != "127.0.0.1" && "$AGENT_BIND_HOST" != "0.0.0.0" && -z "$BACKEND_IP" ]]; then echo "Bind remote membutuhkan --backend-ip untuk allowlist firewall." >&2; exit 1; fi
 if ! [[ "$AGENT_PORT" =~ ^[0-9]+$ ]] || (( AGENT_PORT < 1024 || AGENT_PORT > 65535 )); then echo "Port tidak valid: $AGENT_PORT" >&2; exit 1; fi
+if [[ -z "$AGENT_SHARED_SECRET" && -f /etc/ssh-store-agent/agent.env ]]; then AGENT_SHARED_SECRET="$(sed -n "s/^AGENT_SHARED_SECRET=//p" /etc/ssh-store-agent/agent.env | head -n 1)"; fi
 if [[ -z "$AGENT_SHARED_SECRET" ]]; then AGENT_SHARED_SECRET="$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | base64 -w0)"; fi
 if (( ${#AGENT_SHARED_SECRET} < 32 )); then echo "Secret minimal 32 karakter." >&2; exit 1; fi
 
