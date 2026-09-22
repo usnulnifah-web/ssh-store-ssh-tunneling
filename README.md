@@ -177,3 +177,13 @@ Saat memasang agent, alamat tersebut dapat diganti dengan domain website sebenar
 ```bash
 sudo ADMIN_PANEL_URL=https://www.domain-asli.com/admin bash install.sh
 ```
+
+## SSH WebSocket untuk HTTP Injector
+
+Installer WebSocket proxy tersedia di `install-websocket-ssh.sh`. Dokumentasi lengkap penggunaan dan pengaturan client ada di [WEBSOCKET-HTTP-INJECTOR.md](./WEBSOCKET-HTTP-INJECTOR.md).
+
+```bash
+sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
+```
+
+Installer ini memasang proxy WebSocket nyata ke SSH lokal, Nginx, service systemd, health check, dan TLS Let's Encrypt opsional. Gunakan port `80` dengan path `/ssh` untuk WS atau port `443` dengan path `/ssh` setelah TLS aktif untuk WSS.
