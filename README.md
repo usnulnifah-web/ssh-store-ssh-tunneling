@@ -111,3 +111,5 @@ Untuk memperbarui installer:
 git pull
 sudo bash install.sh
 ```
+
+Manual operasi admin dan user tersedia di [ADMIN-USER-MANUAL.md](https://github.com/usnulnifah-web/ssh-store/blob/main/ADMIN-USER-MANUAL.md).
