@@ -30,11 +30,13 @@ cd ssh-store-vps-agent-installer
 sudo bash install.sh
 ```
 
-Installer akan meminta:
+Installer berjalan non-interaktif dengan default aman: bind `127.0.0.1`, port `8787`, dan shared secret HMAC dibuat otomatis. Untuk backend di server berbeda, parameter opsional dapat diberikan tanpa prompt:
 
-1. IP backend yang boleh masuk firewall, opsional.
-2. Shared secret HMAC minimal 32 karakter.
-3. Port agent lokal, default `8787`.
+```bash
+sudo bash install.sh --backend-ip 198.51.100.10 --bind-host 0.0.0.0
+```
+
+Secret HMAC bukan password SSH VPS. Secret tersebut hanya mengamankan komunikasi Backend API dengan Agent. Password/SSH key untuk koneksi VPS diatur terpisah dari panel admin website.
 
 Installer kemudian:
 
