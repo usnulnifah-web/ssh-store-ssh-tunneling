@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 if [[ "${EUID}" -ne 0 ]]; then echo "Jalankan sebagai root: sudo bash install.sh" >&2; exit 1; fi
 if ! command -v node >/dev/null 2>&1; then echo "Node.js belum terpasang. Install Node.js 20+ terlebih dahulu." >&2; exit 1; fi
+NODE_BIN="$(command -v node)"
 node_major="$(node -p 'process.versions.node.split(".")[0]')"
 if (( node_major < 20 )); then echo "Node.js 20+ diperlukan. Versi saat ini: $(node --version)" >&2; exit 1; fi
 
@@ -55,7 +56,8 @@ EOF
 chmod 0600 /etc/ssh-store-agent/agent.env
 chown -R root:root /opt/ssh-store-agent /etc/ssh-store-agent /var/lib/ssh-store-agent
 
-install -m 0644 systemd/ssh-store-agent.service /etc/systemd/system/ssh-store-agent.service
+sed "s|@NODE_BIN@|${NODE_BIN}|g" systemd/ssh-store-agent.service > /etc/systemd/system/ssh-store-agent.service
+chmod 0644 /etc/systemd/system/ssh-store-agent.service
 systemctl daemon-reload
 systemctl enable --now ssh-store-agent
 
@@ -67,7 +69,9 @@ fi
 if curl -fsS --max-time 5 "http://127.0.0.1:${AGENT_PORT}/health" | grep -q 'ssh-store-agent'; then
   echo "Instalasi berhasil. Agent aktif di ${AGENT_BIND_HOST}:${AGENT_PORT}."
 else
-  echo "Service terpasang tetapi health check gagal. Cek: systemctl status ssh-store-agent" >&2
+  echo "Service terpasang tetapi health check gagal." >&2
+  systemctl status ssh-store-agent --no-pager || true
+  journalctl -u ssh-store-agent -n 30 --no-pager || true
   exit 1
 fi
 

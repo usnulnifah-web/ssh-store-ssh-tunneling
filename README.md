@@ -100,3 +100,14 @@ Installer ini memasang agent provisioning, bukan otomatis memasang semua protoco
 ## Bind address dan koneksi remote
 
 Default agent bind ke `127.0.0.1`, cocok jika Backend API berjalan pada VPS yang sama. Jika Backend API berada di server berbeda, installer dapat memakai bind address `0.0.0.0` atau alamat private interface, tetapi **wajib** mengisi IP backend pada prompt firewall. Jangan membuka port agent ke seluruh internet. Untuk produksi, private network/VPN lebih baik daripada bind publik.
+
+## Jika health check gagal
+
+Versi installer terbaru otomatis mendeteksi lokasi Node.js, termasuk instalasi melalui NVM, lalu memasukkan path tersebut ke unit systemd. Jika service tetap gagal, installer sekarang langsung menampilkan `systemctl status` dan 30 baris `journalctl` agar penyebab terlihat.
+
+Untuk memperbarui installer:
+
+```bash
+git pull
+sudo bash install.sh
+```
