@@ -14,7 +14,7 @@ RestartSec=5
 User=root
 NoNewPrivileges=false
 PrivateTmp=true
-ProtectSystem=full
+ProtectSystem=off
  ProtectHome=no
 ReadWritePaths=/var/lib/ssh-store-agent /home /etc
 
