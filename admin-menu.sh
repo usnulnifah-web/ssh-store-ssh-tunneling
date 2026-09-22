@@ -10,8 +10,8 @@ if [[ -x /usr/local/sbin/ssh-store-license-check ]] && ! /usr/local/sbin/ssh-sto
 ESC=$'\033'
 RESET="${ESC}[0m"; CYAN="${ESC}[36m"; BLUE="${ESC}[34m"; GREEN="${ESC}[32m"; YELLOW="${ESC}[33m"; RED="${ESC}[31m"; MAGENTA="${ESC}[35m"; DIM="${ESC}[2m"
 clear_screen(){ command -v clear >/dev/null 2>&1 && clear || true; printf '\033[2J\033[H'; }
-item(){ local text="$1" width; width=$(tput cols 2>/dev/null || echo 80); printf '%*s%s\n' $(( (width+${#text})/2 )) '' "$text"; }
-line(){ printf '%b\n' "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"; }
+item(){ local text="$1"; printf '  %s\n' "$text"; }
+line(){ local width; width=$(tput cols 2>/dev/null || echo 60); (( width > 60 )) && width=60; printf '%b\n' "${CYAN}$(printf '%*s' "$width" '' | tr ' ' '-')${RESET}"; }
 logo(){ printf "%b\n" "${CYAN}██╗  ██╗  █████╗  ██████╗ ██╗██████╗ ${RESET}"; printf "%b\n" "${BLUE}██║  ██║ ██╔══██╗██╔══██╗██║██╔══██╗${RESET}"; printf "%b\n" "${MAGENTA}███████║ ███████║██████╔╝██║██████╔╝${RESET}"; printf "%b\n" "${YELLOW}██╔══██║ ██╔══██║██╔══██╗██║██╔══██╗${RESET}"; printf "%b\n" "${GREEN}██║  ██║ ██║  ██║██████╔╝██║██████╔╝${RESET}"; }
 header(){ clear_screen; logo; printf "%b\n" "${DIM}Script khusus website SSH Store${RESET}"; printf "%b\n" "${YELLOW}SCRIPT INI PREMIUM BERLANGGANAN${RESET}"; printf "%b\n" "${YELLOW}SCRIPT INI HANYA AKTIF 3 HARI TRIAL. JIKA PELANGGAN TIDAK MEMPERPANJANG, SCRIPT TIDAK DAPAT DIJALANKAN.${RESET}"; printf "%b\n" "${BLUE}Hubungi: 081374452477 untuk berlangganan script premium${RESET}"; printf "%b\n" "${DIM}VPS Provisioning & Tunnel Control Panel${RESET}"; line; printf "%b\n" "${GREEN}  Status: SIAP DIGUNAKAN${RESET}"; line; }
 request(){ local method="$1" path="$2" body="${3:-{}}"; local ts sig; ts="$(date +%s)"; sig="$(printf '%s.%s' "$ts" "$body" | openssl dgst -sha256 -hmac "$AGENT_SECRET" -hex | sed 's/^.* //')"; curl -fsS --max-time 12 -X "$method" "http://127.0.0.1:${AGENT_PORT}${path}" -H "content-type: application/json" -H "x-agent-timestamp: ${ts}" -H "x-agent-signature: ${sig}" -d "$body"; }
