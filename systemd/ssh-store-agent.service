@@ -15,8 +15,8 @@ User=root
 NoNewPrivileges=false
 PrivateTmp=true
 ProtectSystem=full
-ProtectHome=read-only
-ReadWritePaths=/var/lib/ssh-store-agent
+ ProtectHome=no
+ ReadWritePaths=/var/lib/ssh-store-agent /home /etc/passwd /etc/shadow /etc/group /etc/gshadow /etc/subuid /etc/subgid
 
 [Install]
 WantedBy=multi-user.target
