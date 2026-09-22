@@ -6,7 +6,7 @@ Repository ini khusus untuk memasang **VPS Provisioning Agent** di VPS pelanggan
 
 | Repository | Fungsi | Dipasang di mana? |
 |---|---|---|
-| [ssh-store](https://github.com/usnulnifah-web/ssh-store) | Website publik, dashboard member, panel admin, Backend API, dan roadmap aplikasi | Hosting/backend website |
+| [ssh-store](https://github.com/usnulnifah-web/ssh-store-website) | Website publik, dashboard member, panel admin, Backend API, dan roadmap aplikasi | Hosting/backend website |
 | `ssh-store-vps-agent-installer` | Installer, unit systemd, dan source VPS Agent | Setiap VPS yang ingin dihubungkan |
 
 **Pelanggan tidak perlu memasang repository website ke VPS tunnel.** Mereka cukup memasang repository agent ini pada VPS yang akan membuat akun. Backend website tetap menyimpan konfigurasi server dan menghubungi agent melalui jaringan privat atau allowlist.
@@ -25,7 +25,7 @@ Repository ini khusus untuk memasang **VPS Provisioning Agent** di VPS pelanggan
 Sebaiknya clone lalu periksa script sebelum menjalankannya:
 
 ```bash
-git clone https://github.com/usnulnifah-web/ssh-store-vps-agent-installer.git
+git clone https://github.com/usnulnifah-web/ssh-store-website-ssh-tunneling.git
 cd ssh-store-vps-agent-installer
 sudo bash install.sh
 ```
@@ -112,7 +112,7 @@ git pull
 sudo bash install.sh
 ```
 
-Manual operasi admin dan user tersedia di [ADMIN-USER-MANUAL.md](https://github.com/usnulnifah-web/ssh-store/blob/main/ADMIN-USER-MANUAL.md).
+Manual operasi admin dan user tersedia di [ADMIN-USER-MANUAL.md](https://github.com/usnulnifah-web/ssh-store-website/blob/main/ADMIN-USER-MANUAL.md).
 
 ## Menu terminal admin Habibillah
 

@@ -22,7 +22,7 @@ Repository website memasang halaman publik, member, admin, dan API. Repository V
 Pada VPS Ubuntu/Debian yang menjalankan SSH:
 
 ```bash
-git clone https://github.com/usnulnifah-web/ssh-store-vps-agent-installer.git
+git clone https://github.com/usnulnifah-web/ssh-store-website-ssh-tunneling.git
 cd ssh-store-vps-agent-installer
 sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
 ```
