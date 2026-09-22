@@ -6,6 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 const PORT=Number(process.env.AGENT_PORT||8787);
+const BIND_HOST=process.env.AGENT_BIND_HOST||'127.0.0.1';
 const SECRET=process.env.AGENT_SHARED_SECRET;
 const DATA_FILE=process.env.AGENT_DATA_FILE||'/var/lib/ssh-store-agent/accounts.json';
 const MAX_SKEW_SECONDS=Number(process.env.AGENT_MAX_SKEW_SECONDS||60);
@@ -29,4 +30,4 @@ async function setStatus(username,status){if(!validUsername(username)||!['active
 async function deleteAccount(username){if(!validUsername(username))throw new Error('username tidak valid');const db=await load();if(!db[username])throw new Error('akun tidak ditemukan');await command('/usr/sbin/userdel',['-r',username]);delete db[username];await save(db);return {deleted:true,username}}
 function metrics(){const total=os.totalmem(),free=os.freemem(),cpu=Math.min(100,Math.round((os.loadavg()[0]/Math.max(1,os.cpus().length))*100));return {status:'online',hostname:os.hostname(),uptimeSeconds:Math.round(os.uptime()),cpuPercent:cpu,memoryPercent:Math.round(((total-free)/total)*100),loadAverage:os.loadavg(),checkedAt:new Date().toISOString()}}
 const server=http.createServer(async(req,res)=>{try{if(req.method==='GET'&&req.url==='/health')return json(res,200,{ok:true,service:'ssh-store-agent'});const raw=await readBody(req).then(x=>JSON.stringify(x));if(!auth(req,raw))return json(res,401,{ok:false,error:'unauthorized'});const body=raw==='{}'?{}:JSON.parse(raw);if(req.method==='GET'&&req.url==='/metrics')return json(res,200,{ok:true,metrics:metrics()});if(req.method==='POST'&&req.url==='/accounts'){return json(res,201,{ok:true,account:await createAccount(body)})}if(req.method==='POST'&&req.url==='/accounts/extend'){return json(res,200,{ok:true,account:await extendAccount(body)})}if(req.method==='POST'&&req.url==='/accounts/status'){return json(res,200,{ok:true,account:await setStatus(body.username,body.status)})}if(req.method==='DELETE'&&req.url.startsWith('/accounts/')){return json(res,200,{ok:true,result:await deleteAccount(req.url.split('/').pop())})}return json(res,404,{ok:false,error:'not found'})}catch(e){console.error(e);return json(res,400,{ok:false,error:e.message})}});
-server.listen(PORT,'127.0.0.1',()=>console.log(`SSH Store Agent listening on 127.0.0.1:${PORT}`));
+server.listen(PORT,BIND_HOST,()=>console.log(`SSH Store Agent listening on ${BIND_HOST}:${PORT}`));

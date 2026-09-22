@@ -94,3 +94,7 @@ Semua endpoint selain `/health` memakai signature HMAC dengan timestamp. Agent h
 ## Catatan produksi
 
 Installer ini memasang agent provisioning, bukan otomatis memasang semua protocol tunnel. Provisioner OpenVPN, V2Ray, VLESS, Trojan, WireGuard, dan WebSocket harus ditambahkan serta diuji sesuai konfigurasi server masing-masing sebelum produk tersebut diaktifkan di website.
+
+## Bind address dan koneksi remote
+
+Default agent bind ke `127.0.0.1`, cocok jika Backend API berjalan pada VPS yang sama. Jika Backend API berada di server berbeda, installer dapat memakai bind address `0.0.0.0` atau alamat private interface, tetapi **wajib** mengisi IP backend pada prompt firewall. Jangan membuka port agent ke seluruh internet. Untuk produksi, private network/VPN lebih baik daripada bind publik.
