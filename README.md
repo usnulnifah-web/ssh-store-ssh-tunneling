@@ -163,3 +163,17 @@ sudo ssh-store-license-manager extend 30
 ```
 
 Pada produksi, perpanjangan sebaiknya dilakukan oleh Backend API setelah pembayaran/aktivasi pelanggan terverifikasi. File lisensi berada di `/var/lib/ssh-store-agent/license.env` dan tidak boleh diedit atau dibagikan sembarangan.
+
+## Informasi OS dan Halaman Admin
+
+Menu login SSH mendeteksi dan menampilkan tipe OS VPS, misalnya `Ubuntu 24.04`. Menu juga menampilkan alamat panel admin dengan format:
+
+```text
+https://www.domain-anda.com/admin
+```
+
+Saat memasang agent, alamat tersebut dapat diganti dengan domain website sebenarnya:
+
+```bash
+sudo ADMIN_PANEL_URL=https://www.domain-asli.com/admin bash install.sh
+```
