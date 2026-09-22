@@ -1,0 +1,1 @@
+{"name":"ssh-store-vps-agent-installer","private":true,"type":"module","engines":{"node":">=20"},"scripts":{"start":"node src/agent.js"}}

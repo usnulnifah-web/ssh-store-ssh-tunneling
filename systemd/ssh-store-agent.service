@@ -1,0 +1,21 @@
+[Unit]
+Description=SSH Store VPS Provisioning Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ssh-store-agent
+EnvironmentFile=/etc/ssh-store-agent/agent.env
+ExecStart=/usr/bin/node /opt/ssh-store-agent/agent.js
+Restart=on-failure
+RestartSec=5
+User=root
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/var/lib/ssh-store-agent
+
+[Install]
+WantedBy=multi-user.target
