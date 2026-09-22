@@ -6,8 +6,8 @@ Repository ini khusus untuk memasang **VPS Provisioning Agent** di VPS pelanggan
 
 | Repository | Fungsi | Dipasang di mana? |
 |---|---|---|
-| [ssh-store](https://github.com/usnulnifah-web/ssh-store-website) | Website publik, dashboard member, panel admin, Backend API, dan roadmap aplikasi | Hosting/backend website |
-| `ssh-store-vps-agent-installer` | Installer, unit systemd, dan source VPS Agent | Setiap VPS yang ingin dihubungkan |
+| [ssh-store-website](https://github.com/usnulnifah-web/ssh-store-website) | Website publik, dashboard member, panel admin, Backend API, dan roadmap aplikasi | Hosting/backend website |
+| `ssh-store-ssh-tunneling` | Installer, unit systemd, dan source VPS Agent | Setiap VPS yang ingin dihubungkan |
 
 **Pelanggan tidak perlu memasang repository website ke VPS tunnel.** Mereka cukup memasang repository agent ini pada VPS yang akan membuat akun. Backend website tetap menyimpan konfigurasi server dan menghubungi agent melalui jaringan privat atau allowlist.
 
@@ -25,8 +25,8 @@ Repository ini khusus untuk memasang **VPS Provisioning Agent** di VPS pelanggan
 Sebaiknya clone lalu periksa script sebelum menjalankannya:
 
 ```bash
-git clone https://github.com/usnulnifah-web/ssh-store-website-ssh-tunneling.git
-cd ssh-store-vps-agent-installer
+git clone https://github.com/usnulnifah-web/ssh-store-ssh-tunneling.git
+cd ssh-store-ssh-tunneling
 sudo bash install.sh
 ```
 
@@ -187,3 +187,42 @@ sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocke
 ```
 
 Installer ini memasang proxy WebSocket nyata ke SSH lokal, Nginx, service systemd, health check, dan TLS Let's Encrypt opsional. Gunakan port `80` dengan path `/ssh` untuk WS atau port `443` dengan path `/ssh` setelah TLS aktif untuk WSS.
+
+
+## DNS produk dan domain tunnel
+
+Hostname harus diarahkan ke IP VPS tempat layanan tersebut berjalan. Untuk SSH WebSocket, buat record seperti berikut:
+
+```text
+Type: A
+Name: ssh
+Value: IP_PUBLIK_VPS_TUNNEL
+TTL: 300
+```
+
+Kemudian verifikasi:
+
+```bash
+dig +short ssh.domain-anda.com
+```
+
+Hasil harus sama dengan IP publik VPS tunnel. Instalasi WSS membutuhkan port TCP `80` untuk verifikasi sertifikat dan TCP `443` untuk koneksi TLS:
+
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo DOMAIN=ssh.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
+```
+
+Gunakan pemetaan berikut saat membuat produk pada panel admin:
+
+| Produk | Hostname | Target DNS | Endpoint |
+|---|---|---|---|
+| SSH WebSocket | `ssh.domain-anda.com` | IP VPS SSH tunnel | `80/ssh` |
+| SSH WebSocket TLS | `ssh.domain-anda.com` | IP VPS SSH tunnel | `443/ssh` |
+| OpenVPN WebSocket | `vpn.domain-anda.com` | IP VPS OpenVPN | port/path OpenVPN |
+| V2Ray/VLESS | `vless.domain-anda.com` | IP VPS V2Ray | port/path VLESS |
+| Trojan | `trojan.domain-anda.com` | IP VPS Trojan | port Trojan |
+| WireGuard | `wg.domain-anda.com` | IP VPS WireGuard | UDP port WireGuard |
+
+Jangan menggunakan hostname SSH untuk produk V2Ray atau OpenVPN jika produk tersebut berada pada VPS yang berbeda. Detail HTTP Injector untuk SSH TLS adalah host `ssh.domain-anda.com`, port `443`, path `/ssh`, TLS aktif, serta username dan password akun SSH.

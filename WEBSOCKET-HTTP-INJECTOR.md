@@ -9,7 +9,7 @@ Website + Backend API (ssh-store)
               |
               | HMAC/API
               v
-VPS Tunnel (ssh-store-vps-agent-installer)
+VPS Tunnel (ssh-store-ssh-tunneling)
   - SSH server
   - SSH WebSocket proxy
   - Nginx port 80/443
@@ -22,8 +22,8 @@ Repository website memasang halaman publik, member, admin, dan API. Repository V
 Pada VPS Ubuntu/Debian yang menjalankan SSH:
 
 ```bash
-git clone https://github.com/usnulnifah-web/ssh-store-website-ssh-tunneling.git
-cd ssh-store-vps-agent-installer
+git clone https://github.com/usnulnifah-web/ssh-store-ssh-tunneling.git
+cd ssh-store-ssh-tunneling
 sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
 ```
 
