@@ -1,65 +1,132 @@
 # SSH WebSocket untuk HTTP Injector
 
-## Arti terpisah
+Dokumen ini hanya menjelaskan fitur yang dipasang oleh repository ini: **akun SSH Linux** dan **proxy SSH WebSocket**. Fitur OpenVPN, V2Ray, Trojan, Shadowsocks, dan WireGuard belum dipasang oleh installer ini sehingga tidak dibahas sebagai fitur aktif.
 
-Komponen dibuat terpisah supaya satu website dapat mengelola banyak VPS tunnel:
+## Komponen yang dipasang
+
+`install.sh` memasang VPS Agent untuk membuat dan mengelola akun SSH. `install-websocket-ssh.sh` memasang proxy WebSocket yang meneruskan koneksi ke SSH lokal pada port 22.
 
 ```text
-Website + Backend API (ssh-store)
-              |
-              | HMAC/API
-              v
-VPS Tunnel (ssh-store-ssh-tunneling)
-  - SSH server
-  - SSH WebSocket proxy
-  - Nginx port 80/443
+HTTP Injector
+    |
+    | WebSocket / WSS
+    v
+Nginx port 80 atau 443
+    |
+    v
+SSH WebSocket Proxy /ssh
+    |
+    v
+SSH server 127.0.0.1:22
 ```
 
-Repository website memasang halaman publik, member, admin, dan API. Repository VPS memasang service pada VPS yang menjadi endpoint tunnel. Keduanya dapat berada pada server yang sama atau berbeda.
+## Persyaratan
 
-## Instalasi
+Gunakan Ubuntu/Debian dengan akses root, SSH aktif, Node.js 20 atau lebih baru, serta domain yang dapat diarahkan ke IP publik VPS. Untuk WSS, port TCP 80 dan 443 harus dapat diakses dari internet.
 
-Pada VPS Ubuntu/Debian yang menjalankan SSH:
+## Instalasi VPS Agent
 
 ```bash
 git clone https://github.com/usnulnifah-web/ssh-store-ssh-tunneling.git
 cd ssh-store-ssh-tunneling
-sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
+sudo bash install.sh
 ```
 
-Untuk WebSocket tanpa TLS saat uji coba:
+Installer membuat service `ssh-store-agent` dan memasang menu admin SSH. Agent digunakan untuk membuat akun dengan username, password acak, dan tanggal kedaluwarsa.
+
+## Instalasi SSH WebSocket tanpa TLS
+
+Pastikan DNS hostname sudah mengarah ke IP VPS, lalu jalankan:
 
 ```bash
-sudo DOMAIN=_ bash install-websocket-ssh.sh
+sudo DOMAIN=ssh.domain-anda.com bash install-websocket-ssh.sh
 ```
 
-Untuk HTTPS/WSS, DNS domain harus sudah menunjuk ke IP VPS dan port 80/443 harus dapat diakses. Installer meminta sertifikat Let's Encrypt jika `DOMAIN` dan `EMAIL` diisi.
+Endpoint yang dihasilkan:
+
+```text
+ws://ssh.domain-anda.com/ssh
+```
+
+Port publik: `80`. Path: `/ssh`.
+
+## Instalasi SSH WebSocket dengan TLS/WSS
+
+Buat DNS record terlebih dahulu:
+
+```text
+Type: A
+Name: ssh
+Value: IP_PUBLIK_VPS
+TTL: 300
+```
+
+Periksa hasil DNS:
+
+```bash
+dig +short ssh.domain-anda.com
+```
+
+Output harus sama dengan IP publik VPS. Setelah itu jalankan:
+
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo DOMAIN=ssh.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
+```
+
+Installer meminta sertifikat Let's Encrypt, mengatur Nginx, dan mengaktifkan WSS jika DNS serta verifikasi port berhasil.
+
+Endpoint TLS:
+
+```text
+wss://ssh.domain-anda.com/ssh
+```
 
 ## Pengaturan HTTP Injector
 
-Gunakan akun SSH yang dibuat oleh VPS Agent:
+Gunakan akun SSH yang dibuat melalui menu Agent atau Backend Website.
 
-| Pengaturan | WebSocket biasa | WebSocket TLS |
-|---|---:|---:|
-| Host | domain VPS | domain VPS |
-| Port | 80 | 443 |
-| Path | `/ssh` | `/ssh` |
+| Field | Tanpa TLS | Dengan TLS |
+|---|---|---|
+| WebSocket host | `ssh.domain-anda.com` | `ssh.domain-anda.com` |
+| WebSocket port | `80` | `443` |
+| WebSocket path | `/ssh` | `/ssh` |
 | TLS/SSL | Nonaktif | Aktif |
-| Username/password | akun SSH | akun SSH |
+| SNI/Server Name | kosong atau hostname | `ssh.domain-anda.com` |
+| SSH username | username akun | username akun |
+| SSH password | password akun | password akun |
+| SSH port tujuan | `22` | `22` |
 
-Gunakan `wss://domain/ssh` hanya setelah sertifikat TLS berhasil diterbitkan. Proxy ini hanya meneruskan koneksi WebSocket ke `127.0.0.1:22`; autentikasi tetap dilakukan oleh SSH.
+Proxy ini tidak mengganti autentikasi SSH. Username dan password tetap diverifikasi oleh SSH server VPS.
 
-## Perintah operasional
+## Perintah penggunaan
+
+Periksa service Agent:
 
 ```bash
-sudo systemctl status ssh-store-websocket
-sudo journalctl -u ssh-store-websocket -f
+sudo systemctl status ssh-store-agent --no-pager
+sudo journalctl -u ssh-store-agent -n 50 --no-pager
+curl http://127.0.0.1:8787/health
+```
+
+Periksa service WebSocket:
+
+```bash
+sudo systemctl status ssh-store-websocket --no-pager
+sudo journalctl -u ssh-store-websocket -n 50 --no-pager
 curl http://127.0.0.1:8080/health
 sudo systemctl restart ssh-store-websocket
 ```
 
-## Catatan penting
+Periksa Nginx dan port:
 
-Installer ini memasang **SSH WebSocket proxy nyata**, bukan sekadar menu. Ia tidak memasang payload bypass, tidak menerima perintah shell melalui HTTP, dan tidak menghapus keamanan login SSH. Jangan gunakan untuk akses tanpa izin, DDoS, port scanning, malware, atau pelanggaran jaringan.
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+sudo ss -ltnp | grep -E ':(80|443|8080)\\b'
+```
 
-Jika website dan WebSocket dipasang pada VPS yang sama dengan domain berbeda, keduanya dapat berbagi Nginx. Jika memakai domain yang sama, konfigurasi Nginx harus digabung agar route `/ssh` diteruskan ke proxy dan route website tetap dilayani oleh website.
+## Troubleshooting
+
+Jika DNS belum mengarah ke VPS, Let's Encrypt tidak dapat menerbitkan sertifikat. Jika port 80 atau 443 tertutup, buka firewall VPS dan firewall provider. Jika health check internal berhasil tetapi HTTP Injector gagal, periksa hostname, port, path `/ssh`, mode TLS, SNI, username, password, serta tanggal kedaluwarsa akun.

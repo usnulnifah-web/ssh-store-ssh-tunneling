@@ -93,10 +93,6 @@ Semua endpoint selain `/health` memakai signature HMAC dengan timestamp. Agent h
 - Uji di VPS staging sebelum menghubungkan saldo dan payment gateway nyata.
 - Tambahkan kebijakan penggunaan yang melarang DDoS, port scanning, hacking, malware, penipuan, dan akses tanpa izin.
 
-## Catatan produksi
-
-Installer ini memasang agent provisioning, bukan otomatis memasang semua protocol tunnel. Provisioner OpenVPN, V2Ray, VLESS, Trojan, WireGuard, dan WebSocket harus ditambahkan serta diuji sesuai konfigurasi server masing-masing sebelum produk tersebut diaktifkan di website.
-
 ## Bind address dan koneksi remote
 
 Default agent bind ke `127.0.0.1`, cocok jika Backend API berjalan pada VPS yang sama. Jika Backend API berada di server berbeda, installer dapat memakai bind address `0.0.0.0` atau alamat private interface, tetapi **wajib** mengisi IP backend pada prompt firewall. Jangan membuka port agent ke seluruh internet. Untuk produksi, private network/VPN lebih baik daripada bind publik.
@@ -116,18 +112,12 @@ Manual operasi admin dan user tersedia di [ADMIN-USER-MANUAL.md](https://github.
 
 ## Menu terminal admin Habibillah
 
-Installer terbaru juga memasang menu terminal berwarna untuk login SSH root interaktif. Menu menampilkan nama **HABIBILLAH STORE**, status agent, dan daftar protocol bernomor.
+Installer terbaru juga memasang menu terminal berwarna untuk login SSH root interaktif. Menu menampilkan nama **HABIBILLAH STORE**, status agent, dan menu SSH WebSocket.
 
-Saat root login melalui SSH secara interaktif, menu muncul otomatis. Pilihan utama:
+Saat root login melalui SSH secara interaktif, menu muncul otomatis. Pilihan utama yang aktif:
 
 ```text
 1. SSH WebSocket
-2. OpenVPN WebSocket
-3. V2Ray / VLESS
-4. Trojan
-5. Shadowsocks
-6. WireGuard
-7. WebSocket SSL / TLS
 0. Keluar ke shell
 ```
 
@@ -144,7 +134,7 @@ Pilih `1` untuk submenu SSH WebSocket:
 
 Penghapusan akun meminta konfirmasi dengan mengetik `HAPUS`. Menu hanya berjalan pada terminal SSH interaktif root, sehingga tidak mengganggu `scp`, cron, API, atau perintah SSH otomatis. Jika ingin keluar dari menu ke shell, pilih `0`.
 
-Menu ini mengelola akun melalui VPS Agent lokal. Provisioner OpenVPN, V2Ray, Trojan, Shadowsocks, dan WireGuard harus diaktifkan setelah konfigurasi protocol masing-masing selesai diuji dari panel admin.
+Menu ini mengelola akun SSH melalui VPS Agent lokal.
 
 ## Lisensi Premium dan Trial
 
@@ -189,24 +179,24 @@ sudo DOMAIN=ws.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocke
 Installer ini memasang proxy WebSocket nyata ke SSH lokal, Nginx, service systemd, health check, dan TLS Let's Encrypt opsional. Gunakan port `80` dengan path `/ssh` untuk WS atau port `443` dengan path `/ssh` setelah TLS aktif untuk WSS.
 
 
-## DNS produk dan domain tunnel
+## DNS dan domain SSH WebSocket
 
-Hostname harus diarahkan ke IP VPS tempat layanan tersebut berjalan. Untuk SSH WebSocket, buat record seperti berikut:
+Dokumentasi ini hanya mencakup SSH Agent dan SSH WebSocket yang dipasang oleh repository ini. Buat record DNS yang mengarah ke IP publik VPS SSH tunnel:
 
 ```text
 Type: A
 Name: ssh
-Value: IP_PUBLIK_VPS_TUNNEL
+Value: IP_PUBLIK_VPS
 TTL: 300
 ```
 
-Kemudian verifikasi:
+Periksa hasilnya:
 
 ```bash
 dig +short ssh.domain-anda.com
 ```
 
-Hasil harus sama dengan IP publik VPS tunnel. Instalasi WSS membutuhkan port TCP `80` untuk verifikasi sertifikat dan TCP `443` untuk koneksi TLS:
+Untuk WSS, buka port TCP 80 dan 443 lalu jalankan:
 
 ```bash
 sudo ufw allow 80/tcp
@@ -214,15 +204,4 @@ sudo ufw allow 443/tcp
 sudo DOMAIN=ssh.domain-anda.com EMAIL=admin@domain-anda.com bash install-websocket-ssh.sh
 ```
 
-Gunakan pemetaan berikut saat membuat produk pada panel admin:
-
-| Produk | Hostname | Target DNS | Endpoint |
-|---|---|---|---|
-| SSH WebSocket | `ssh.domain-anda.com` | IP VPS SSH tunnel | `80/ssh` |
-| SSH WebSocket TLS | `ssh.domain-anda.com` | IP VPS SSH tunnel | `443/ssh` |
-| OpenVPN WebSocket | `vpn.domain-anda.com` | IP VPS OpenVPN | port/path OpenVPN |
-| V2Ray/VLESS | `vless.domain-anda.com` | IP VPS V2Ray | port/path VLESS |
-| Trojan | `trojan.domain-anda.com` | IP VPS Trojan | port Trojan |
-| WireGuard | `wg.domain-anda.com` | IP VPS WireGuard | UDP port WireGuard |
-
-Jangan menggunakan hostname SSH untuk produk V2Ray atau OpenVPN jika produk tersebut berada pada VPS yang berbeda. Detail HTTP Injector untuk SSH TLS adalah host `ssh.domain-anda.com`, port `443`, path `/ssh`, TLS aktif, serta username dan password akun SSH.
+Gunakan `ssh.domain-anda.com:80/ssh` untuk WebSocket tanpa TLS atau `ssh.domain-anda.com:443/ssh` untuk WSS setelah sertifikat berhasil diterbitkan. Protocol lain belum dipasang oleh installer ini.
