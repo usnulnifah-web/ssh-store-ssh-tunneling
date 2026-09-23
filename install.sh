@@ -12,6 +12,11 @@ AGENT_BIND_HOST="${AGENT_BIND_HOST:-127.0.0.1}"
 AGENT_PORT="${AGENT_PORT:-8787}"
 AGENT_SHARED_SECRET="${AGENT_SHARED_SECRET:-}"
 ADMIN_PANEL_URL="${ADMIN_PANEL_URL:-https://www.domain-anda.com/admin}"
+LICENSE_SERVER_URL="${LICENSE_SERVER_URL:-}"
+LICENSE_API_KEY="${LICENSE_API_KEY:-}"
+LICENSE_PUBLIC_KEY_FILE="${LICENSE_PUBLIC_KEY_FILE:-/etc/ssh-store-agent/license-public.pem}"
+LICENSE_FINGERPRINT="${LICENSE_FINGERPRINT:-}"
+LICENSE_SUPPORT_CONTACT="${LICENSE_SUPPORT_CONTACT:-081374452477}"
 
 usage(){
   cat <<'HELP'
@@ -23,6 +28,9 @@ Opsi:
   --bind-host HOST      default 127.0.0.1; gunakan 0.0.0.0 hanya dengan firewall
   --port PORT           default 8787
   --secret SECRET       secret HMAC; jika kosong dibuat otomatis
+  --license-server URL  URL HTTPS license server
+  --license-api-key KEY API key client untuk license server
+  --license-fingerprint HASH fingerprint domain/IP VPS
   --help                tampilkan bantuan
 
 Contoh backend berbeda:
@@ -35,6 +43,9 @@ while [[ $# -gt 0 ]]; do
     --bind-host) AGENT_BIND_HOST="${2:?bind host belum diisi}"; shift 2;;
     --port) AGENT_PORT="${2:?port belum diisi}"; shift 2;;
     --secret) AGENT_SHARED_SECRET="${2:?secret belum diisi}"; shift 2;;
+    --license-server) LICENSE_SERVER_URL="${2:?URL license server belum diisi}"; shift 2;;
+    --license-api-key) LICENSE_API_KEY="${2:?API key lisensi belum diisi}"; shift 2;;
+    --license-fingerprint) LICENSE_FINGERPRINT="${2:?fingerprint belum diisi}"; shift 2;;
     --help) usage; exit 0;;
     *) echo "Opsi tidak dikenal: $1" >&2; usage; exit 1;;
   esac
@@ -45,19 +56,27 @@ if ! [[ "$AGENT_PORT" =~ ^[0-9]+$ ]] || (( AGENT_PORT < 1024 || AGENT_PORT > 655
 if [[ -z "$AGENT_SHARED_SECRET" && -f /etc/ssh-store-agent/agent.env ]]; then AGENT_SHARED_SECRET="$(sed -n "s/^AGENT_SHARED_SECRET=//p" /etc/ssh-store-agent/agent.env | head -n 1)"; fi
 if [[ -z "$AGENT_SHARED_SECRET" ]]; then AGENT_SHARED_SECRET="$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | base64 -w0)"; fi
 if (( ${#AGENT_SHARED_SECRET} < 32 )); then echo "Secret minimal 32 karakter." >&2; exit 1; fi
+if [[ -z "$LICENSE_SERVER_URL" || -z "$LICENSE_API_KEY" || -z "$LICENSE_FINGERPRINT" ]]; then echo "License server, API key, dan fingerprint wajib diisi." >&2; exit 1; fi
 
 install -d -m 0750 /opt/ssh-store-agent /var/lib/ssh-store-agent /etc/ssh-store-agent
 install -m 0644 src/agent.js /opt/ssh-store-agent/agent.js
+install -m 0644 src/license-agent-check.js /opt/ssh-store-agent/license-agent-check.js
 install -m 0750 admin-menu.sh /usr/local/sbin/ssh-store-admin-menu
 install -m 0750 license-check.sh /usr/local/sbin/ssh-store-license-check
 install -m 0750 license-manager.sh /usr/local/sbin/ssh-store-license-manager
 install -m 0644 login-menu.sh /etc/profile.d/ssh-store-menu.sh
-if [[ ! -f /var/lib/ssh-store-agent/license.env ]]; then printf "LICENSE_STATUS=active\nLICENSE_EXPIRES_EPOCH=%s\n" "$(( $(date +%s) + 259200 ))" > /var/lib/ssh-store-agent/license.env; chmod 0600 /var/lib/ssh-store-agent/license.env; fi
+if [[ ! -f "$LICENSE_PUBLIC_KEY_FILE" ]]; then echo "Public key lisensi belum ditemukan di $LICENSE_PUBLIC_KEY_FILE." >&2; echo "Salin ed25519-public.pem dari license hosting terlebih dahulu." >&2; exit 1; fi
 cat > /etc/ssh-store-agent/agent.env <<EOF
 AGENT_PORT=${AGENT_PORT}
 AGENT_BIND_HOST=${AGENT_BIND_HOST}
 AGENT_SHARED_SECRET=${AGENT_SHARED_SECRET}
 ADMIN_PANEL_URL=${ADMIN_PANEL_URL}
+LICENSE_ENFORCEMENT=true
+LICENSE_SERVER_URL=${LICENSE_SERVER_URL}
+LICENSE_API_KEY=${LICENSE_API_KEY}
+LICENSE_PUBLIC_KEY_FILE=${LICENSE_PUBLIC_KEY_FILE}
+LICENSE_FINGERPRINT=${LICENSE_FINGERPRINT}
+LICENSE_SUPPORT_CONTACT=${LICENSE_SUPPORT_CONTACT}
 AGENT_DATA_FILE=/var/lib/ssh-store-agent/accounts.json
 AGENT_MAX_SKEW_SECONDS=60
 EOF

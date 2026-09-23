@@ -205,3 +205,26 @@ sudo DOMAIN=ssh.domain-anda.com EMAIL=admin@domain-anda.com bash install-websock
 ```
 
 Gunakan `ssh.domain-anda.com:80/ssh` untuk WebSocket tanpa TLS atau `ssh.domain-anda.com:443/ssh` untuk WSS setelah sertifikat berhasil diterbitkan. Protocol lain belum dipasang oleh installer ini.
+
+## License server privat dan auto-off akun SSH
+
+Versi installer terbaru mewajibkan license server HTTPS, API key client, fingerprint domain/IP VPS, dan public key Ed25519. Agent menolak operasi membuat, memperpanjang, mengaktifkan, atau menghapus akun jika status lisensi tidak valid atau sudah expired.
+
+Setiap instalasi baru mendapat trial 3 hari dari license server privat. Setelah trial atau paket berakhir, agent menampilkan:
+
+```text
+Lisensi sudah kadaluarsa. Silakan pastikan perpanjangan paket ke 081374452477.
+```
+
+Repository kontrol lisensi disimpan terpisah dan privat. Private signing key, database lisensi, dan API key admin tidak boleh berada di repository ini. Lihat repository privat `ssh-store-license-control` untuk server lisensi dan instruksi deployment.
+
+Installer contoh:
+
+```bash
+sudo LICENSE_SERVER_URL=https://license.domainanda.com \
+  LICENSE_API_KEY=CLIENT_API_KEY \
+  LICENSE_FINGERPRINT=FINGERPRINT_DOMAIN_IP \
+  bash install.sh
+```
+
+Sebelum menjalankan installer, salin public key lisensi ke `/etc/ssh-store-agent/license-public.pem`. Pemilik VPS dengan akses root tetap dapat mengedit file lokal; perlindungan utama berasal dari private key yang hanya berada di hosting lisensi dan signature pada setiap response.
